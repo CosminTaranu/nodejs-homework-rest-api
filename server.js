@@ -1,5 +1,10 @@
-const app = require("./app");
+import http from "http";
+import app from "./app.js";
 
-app.listen(3000, () => {
-  console.log("Server is running. Use our API on port: 3000");
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
