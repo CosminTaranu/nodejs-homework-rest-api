@@ -2,7 +2,7 @@ import express from "express";
 import ContactsServices from "../../controllers/contactControllers.js";
 import Joi from "joi";
 import { STATUS_CODES } from "../../utils/constants.js";
-
+import respondWithError from "../../utils/respondWithErrors.js";
 const router = express.Router();
 const schema = Joi.object({
   name: Joi.string().min(3).max(30).required(),
@@ -19,7 +19,11 @@ router.get("/", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const favorite = req.query.favorite === "true";
-    const contactsList = await ContactsServices.listContacts(page, limit);
+    const contactsList = await ContactsServices.listContacts(
+      page,
+      limit,
+      favorite
+    );
     res.status(STATUS_CODES.success).json({
       message: "List of contacts was loaded successfully",
       data: contactsList,
@@ -28,20 +32,15 @@ router.get("/", async (req, res) => {
     respondWithError(res, error);
   }
 });
-
-/* GET localhost:3000/api/contacts/:contactId */
 router.get("/:contactId", async (req, res) => {
   try {
     const contactId = req.params.contactId;
-
     const contact = await ContactsServices.getContactById(contactId);
-
     if (!contact) {
       return res.status(STATUS_CODES.notFound).json({
         message: "Contact was not found",
       });
     }
-
     res.status(STATUS_CODES.success).json({
       message: "The contact was found!",
       data: contact,
@@ -50,7 +49,6 @@ router.get("/:contactId", async (req, res) => {
     respondWithError(res, error);
   }
 });
-
 /* POST localhost:3000/api/contacts */
 router.post("/", async (req, res) => {
   try {
@@ -61,7 +59,6 @@ router.post("/", async (req, res) => {
         errors: error.details.map((err) => err.message),
       });
     }
-
     await ContactsServices.addContact(value);
     res.status(STATUS_CODES.created).json({
       message: `Contact ${value.name} was added successfully`,
@@ -70,13 +67,11 @@ router.post("/", async (req, res) => {
     respondWithError(res, error);
   }
 });
-
 /* DELETE localhost:3000/api/contacts/:contactId */
 router.delete("/:contactId", async (req, res) => {
   try {
     const contactId = req.params.contactId;
     const contact = await ContactsServices.getContactById(contactId);
-
     if (!contact) {
       return res.status(STATUS_CODES.notFound).json({
         message: "The contact was not found.",
@@ -93,7 +88,6 @@ router.delete("/:contactId", async (req, res) => {
     respondWithError(res, error);
   }
 });
-
 /* PUT localhost:3000/api/contacts/:contactId */
 router.put("/:contactId", async (req, res) => {
   try {
@@ -104,7 +98,6 @@ router.put("/:contactId", async (req, res) => {
         errors: error.details.map((err) => err.message),
       });
     }
-
     const contactId = req.params.contactId;
     await ContactsServices.updateContact(value, contactId);
     res.status(STATUS_CODES.success).json({
@@ -123,19 +116,16 @@ router.patch("/:contactId/favorite", async (req, res) => {
         message: "Missing field favorite",
       });
     }
-
     const contactId = req.params.contactId;
     const updatedContact = await ContactsServices.updateStatusContact(
       contactId,
       req.body
     );
-
     if (!updatedContact) {
       return res.status(STATUS_CODES.notFound).json({
         message: "Not found",
       });
     }
-
     res.status(STATUS_CODES.success).json({
       message: `Contact ${updatedContact.name} favorite status updated successfully`,
       data: updatedContact,
@@ -144,10 +134,4 @@ router.patch("/:contactId/favorite", async (req, res) => {
     respondWithError(res, error);
   }
 });
-
-function respondWithError(res, error) {
-  console.error(error);
-  res.status(STATUS_CODES.error).json({ message: error.message || `${error}` });
-}
-
 export default router;

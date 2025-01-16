@@ -1,5 +1,4 @@
 import User from "../models/users.js";
-
 const UserController = {
   async updateSubscription(userId, subscription) {
     try {
@@ -7,7 +6,6 @@ const UserController = {
       if (!user) {
         throw new Error("User not found");
       }
-
       user.subscription = subscription;
       await user.save();
       return user;
@@ -16,5 +14,4 @@ const UserController = {
     }
   },
 };
-
 export default UserController;

@@ -1,44 +1,33 @@
-
 import express from "express";
 import AuthController from "../../controllers/authControllers.js";
 import { STATUS_CODES } from "../../utils/constants.js";
 import User from "../../models/users.js";
 import UserController from "../../controllers/userController.js";
 import passport from "../../utils/passport.js";
-
 const router = express.Router();
-
 function validateSignupPayload(data) {
   const { email, password } = data;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
   if (!email || !password) {
     return "Email and password are required";
   }
-
   if (!emailRegex.test(email)) {
     return "Invalid email format";
   }
-
   if (password.length < 8) {
     return "Password must be at least 8 characters long";
   }
-
   return null;
 }
-
 function validateLoginPayload(data) {
   const { email, password } = data;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
   if (!email || !password) {
     return "Email and password are required";
   }
-
   if (!emailRegex.test(email)) {
     return "Invalid email format";
   }
-
   return null;
 }
 /* POST localhost:3000/api/users/signup/ */
@@ -50,9 +39,7 @@ router.post("/signup", async (req, res) => {
         .status(STATUS_CODES.badRequest)
         .json({ message: validationError });
     }
-
     const newUser = await AuthController.signup(req.body);
-
     res.status(STATUS_CODES.created).json({
       user: {
         email: newUser.email,
@@ -75,11 +62,8 @@ router.post("/login", async (req, res) => {
         .status(STATUS_CODES.badRequest)
         .json({ message: validationError });
     }
-
     const { token, user } = await AuthController.login(req.body);
-
     console.log(`--- user ${user.email} Login! ---`);
-
     res.status(STATUS_CODES.success).json({
       token,
       user: {
@@ -91,7 +75,6 @@ router.post("/login", async (req, res) => {
     res.status(STATUS_CODES.Unauthorized).json({ message: error.message });
   }
 });
-
 /* GET localhost:3000/api/users/logout/ */
 router.get(
   "/logout",
@@ -101,17 +84,14 @@ router.get(
       console.log("Authenticated user:", req.user);
       const userId = req.user._id;
       const user = await User.findById(userId);
-
       if (!user) {
         console.log("User not found:", userId);
         return res
           .status(STATUS_CODES.Unauthorized)
           .json({ message: "Not authorized" });
       }
-
       user.token = null;
       await user.save();
-
       res
         .status(STATUS_CODES.success)
         .json({ message: "User has been logged out successfully" });
@@ -155,13 +135,11 @@ router.patch(
     try {
       const userIdFromToken = req.user._id.toString();
       const userIdFromRequest = req.params.userId;
-
       if (userIdFromToken !== userIdFromRequest) {
         return res
           .status(STATUS_CODES.forbidden)
           .json({ message: "Unauthorized" });
       }
-
       const { subscription } = req.body;
       const validSubscriptions = ["starter", "pro", "business"];
       if (!validSubscriptions.includes(subscription)) {
@@ -169,12 +147,10 @@ router.patch(
           .status(STATUS_CODES.badRequest)
           .json({ message: "Invalid subscription" });
       }
-
       const updatedUser = await UserController.updateSubscription(
         userIdFromRequest,
         subscription
       );
-
       res.status(200).json({
         message: "Subscription updated successfully!",
         user: updatedUser,

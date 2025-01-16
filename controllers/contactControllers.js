@@ -1,9 +1,8 @@
 import Contact from "../models/contacts.js";
-
 async function listContacts(page = -1, limit = 20, favorite = null) {
   try {
     const skip = (page = -1) * limit;
-    let query = {};
+    const query = {};
     if (favorite !== null) {
       query.favorite = favorite;
     }
@@ -13,7 +12,6 @@ async function listContacts(page = -1, limit = 20, favorite = null) {
     throw new Error("Failed to retrieve contacts");
   }
 }
-
 async function getContactById(contactId) {
   try {
     const contact = await Contact.findById(contactId);
@@ -22,7 +20,6 @@ async function getContactById(contactId) {
     throw new Error("Failed to retrieve contact");
   }
 }
-
 async function removeContact(contactId) {
   try {
     const result = await Contact.findByIdAndDelete(contactId);
@@ -31,7 +28,6 @@ async function removeContact(contactId) {
     throw new Error("Failed to delete contact");
   }
 }
-
 async function addContact(contact) {
   try {
     const newContact = new Contact(contact);
@@ -41,7 +37,6 @@ async function addContact(contact) {
     throw new Error("Failed to add contact");
   }
 }
-
 async function updateContact(updatedContact, contactId) {
   try {
     const result = await Contact.findByIdAndUpdate(contactId, updatedContact, {
@@ -72,5 +67,4 @@ const ContactsServices = {
   updateContact,
   updateStatusContact,
 };
-
 export default ContactsServices;

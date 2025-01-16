@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 const { Schema, model } = mongoose;
-
 const userSchema = new Schema({
   email: {
     type: String,
@@ -21,15 +20,16 @@ const userSchema = new Schema({
     type: String,
     default: null,
   },
+  avatarURL: {
+    type: String,
+    default: "",
+  },
 });
-
-userSchema.methods.setPassword = function (password) {
-  this.password = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+userSchema.methods.setPassword = async function (password) {
+  this.password = await bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 };
-
-userSchema.methods.validPassword = function (password) {
-  return bcrypt.compareSync(password, this.password);
+userSchema.methods.validPassword = async function (password) {
+  return await bcrypt.compareSync(password, this.password);
 };
-
 const User = model("User", userSchema);
 export default User;
