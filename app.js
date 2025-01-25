@@ -1,27 +1,25 @@
-import "dotenv/config";
-import express from "express";
-import logger from "morgan";
-import cors from "cors";
-import contactsRouter from "./routes/api/contacts.js";
-import authRouter from "./routes/api/users.js";
-import connectToDb from "./utils/connectToDb.js";
-import passport from "./utils/passport.js";
-import uploadRouter from "./routes/api/avatars.js";
+import express from 'express';
+import mongoose from 'mongoose';
+import userRoutes from './routes/api/userRoutes.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+dotenv.config();
+
 const app = express();
-const formatsLogger = app.get("env") === "development" ? "dev" : "short";
-connectToDb();
-app.use(logger(formatsLogger));
-app.use(cors());
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 app.use(express.json());
-app.use(passport.initialize());
-app.use(express.static("public"));
-app.use("/api/contacts", contactsRouter);
-app.use("/api/users", authRouter);
-app.use("/api/avatars", uploadRouter);
-app.use((_, res) => {
-  res.status(404).json({ message: "Not found" });
-});
-app.use((err, _, res, next) => {
-  res.status(500).json({ message: err.message });
-});
-export default app;
+app.use('/avatars', express.static(path.join(__dirname, 'public/avatars')));
+
+app.use('/api/users', userRoutes);
+
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    app.listen(process.env.PORT || 3000, () => {
+      console.log('Server running on port 3000');
+    });
+  })
+  .catch(error => console.error(error));
+ 
+export default app
