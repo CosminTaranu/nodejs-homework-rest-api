@@ -1,25 +1,25 @@
-const express = require('express')
-const logger = require('morgan')
-const cors = require('cors')
+import express from 'express';
+import mongoose from 'mongoose';
+import userRoutes from './routes/api/userRoutes.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+dotenv.config();
 
-const contactsRouter = require('./routes/api/contacts')
+const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.json());
+app.use('/avatars', express.static(path.join(__dirname, 'public/avatars')));
 
-const app = express()
+app.use('/api/users', userRoutes);
 
-const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
-
-app.use(logger(formatsLogger))
-app.use(cors())
-app.use(express.json())
-
-app.use('/api/contacts', contactsRouter)
-
-app.use((req, res) => {
-  res.status(404).json({ message: 'Not found' })
-})
-
-app.use((err, req, res, next) => {
-  res.status(500).json({ message: err.message })
-})
-
-module.exports = app
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    app.listen(process.env.PORT || 3000, () => {
+      console.log('Server running on port 3000');
+    });
+  })
+  .catch(error => console.error(error));
+ 
+export default app
